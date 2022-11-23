@@ -59,7 +59,9 @@ impl<const N: usize> ShortQueue<N> {
             return false;
         }
 
-        unsafe { *self.buf.get_unchecked_mut(usize::from( tail )) = v }
+        // UNSAFE: the index `tail` starts at 0 and is only adjusted
+        // by `increment`, which returns integers modulo N.  So `tail` is in bounds.
+        unsafe { (*self.buf.get_unchecked( usize::from( tail ) )).set(v) }
 
         // The store is `Release` so that the memory write to buf above is guaranteed
         // to be completed and broadcast to memory before `tail` is updated.
@@ -86,7 +88,9 @@ impl<const N: usize> ShortQueue<N> {
 
         let next_head = Self::increment( head );
 
-        let rv = self.buf[ usize::from( head )].get();
+        // UNSAFE: `head` starts at 0 and is only adjusted by `increment`
+        // which returns integers modulo N.  So `head` is always in bounds.
+        let rv = unsafe{ self.buf.get_unchecked( usize::from( head ) ).get() };
 
         // The store is `Release` to ensure that the memory read from `buf`
         // happens before the value of `head` is updated.  Otherwise 
