@@ -59,7 +59,7 @@ impl<const N: usize> ShortQueue<N> {
             return false;
         }
 
-        self.buf[ usize::from( tail ) ].set(v);
+        unsafe { *self.buf.get_unchecked_mut(usize::from( tail )) = v }
 
         // The store is `Release` so that the memory write to buf above is guaranteed
         // to be completed and broadcast to memory before `tail` is updated.
